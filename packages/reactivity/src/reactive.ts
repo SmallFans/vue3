@@ -1,5 +1,6 @@
 import { isObject } from "@vue/shared";
-import { mutableHandlers, ReactiveFlags } from "./baseHandler";
+import { mutableHandlers } from "./baseHandler";
+import { ReactiveFlags } from "./constans";
 
 export function reactive (target) {
   return createActiveObject(target)
@@ -26,4 +27,8 @@ function createActiveObject(target) {
   // 根据对象缓存代理后的结果
   reactiveMap.set(target, proxy)
   return proxy
+}
+
+export function toReactive(value) {
+  return isObject(value) ? reactive(value) : value
 }

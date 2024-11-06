@@ -1,3 +1,5 @@
+import { DirtyLevels } from "./constans"
+
 export function effect (fn, options?) {
   // 创建一个响应式effect，数据变化后重新执行
 
@@ -27,10 +29,11 @@ function postCleanEffect (effect) {
     effect.deps.length = effect._depsLength // 更新依赖列表的长度
   }
 }
-class ReactiveEffect {
+export class ReactiveEffect {
   _trackId = 0; // 用于记录当前effect执行了几次
   active = true; // 创建的effect是响应式的
   deps = []; 
+  _dirtyLevel = DirtyLevels.Dirty
   _running = 0
   _depsLength = 0
   // fn用户编写的函数
@@ -38,7 +41,14 @@ class ReactiveEffect {
   constructor(public fn, public scheduler) {
 
   }
+  public get dirty () {
+    return this._dirtyLevel === DirtyLevels.Dirty
+  }
+  public set dirty (v) {
+    this._dirtyLevel = v ? DirtyLevels.Dirty : DirtyLevels.NoDirty
+  }
   run () {
+    this._dirtyLevel = DirtyLevels.NoDirty
     if (!this.active) {
       return this.fn()
     }
@@ -91,8 +101,12 @@ export function trackEffect(effect, dep) {
 
 export function triggerEffects(dep) {
   for (const effect of dep.keys()) {
-    if (effect.scheduler) {
-      if (!effect._running) {
+    // 当前这个值是不脏的，但是触发更新需要将值变为脏值
+    if (effect._dirtyLevel < DirtyLevels.Dirty) {
+      effect._dirtyLevel = DirtyLevels.Dirty
+    }
+    if (!effect._running) {
+      if (effect.scheduler) {
         effect.scheduler()
       }
     }
