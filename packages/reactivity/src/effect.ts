@@ -67,7 +67,11 @@ export class ReactiveEffect {
     }
   }
   stop () {
-    this.active = false
+    if (this.active) {
+      this.active = false
+      postCleanEffect(this)
+      preCleanEffect(this)
+    }
   }
 }
 function cleanDepEffect (dep, effect) {
@@ -102,6 +106,7 @@ export function trackEffect(effect, dep) {
 export function triggerEffects(dep) {
   for (const effect of dep.keys()) {
     // 当前这个值是不脏的，但是触发更新需要将值变为脏值
+    // 属性依赖了计算属性，需要让计算属性的dirty再变为true
     if (effect._dirtyLevel < DirtyLevels.Dirty) {
       effect._dirtyLevel = DirtyLevels.Dirty
     }

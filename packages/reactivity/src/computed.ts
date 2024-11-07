@@ -8,6 +8,9 @@ import { trackRefValue, triggerRefValue } from "./ref";
  *    当前值变化后，会让computedEffect里面dirty变为true
  * 3. 计算属性具备收集能力，可以收集对应的effect，依赖的值变化后会触发effect重新执行
  */
+/**
+ * 
+ */
 class ConputedRefImpl {
   public _value;
   public effect;
